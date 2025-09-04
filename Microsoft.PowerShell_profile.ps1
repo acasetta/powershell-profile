@@ -8,6 +8,14 @@ if (-not (Get-Module -ListAvailable -Name Terminal-Icons)) {
 }
 Import-Module -Name Terminal-Icons
 
+if (-not (Get-Module -ListAvailable -Name Catppuccin)) {
+    Install-Module -Name Catppuccin -Scope CurrentUser -Force -SkipPublisherCheck
+}
+Import-Module -Name Catppuccin
+
+# Set a flavor for easy access
+$Flavor = $Catppuccin['Mocha']
+
 # Chocolatey profile
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
@@ -20,6 +28,38 @@ $PSReadLine_Scripts = "$profileDir\PSReadLineProfile.ps1"
 
 . $SWPDM_Scripts
 . $PSReadLine_Scripts
+
+$Colors = @{
+	# Largely based on the Code Editor style guide
+	# Emphasis, ListPrediction and ListPredictionSelected are inspired by the Catppuccin fzf theme
+	
+	# Powershell colours
+	ContinuationPrompt     = $Flavor.Teal.Foreground()
+	Emphasis               = $Flavor.Red.Foreground()
+	Selection              = $Flavor.Surface0.Background()
+	
+	# PSReadLine prediction colours
+	InlinePrediction       = $Flavor.Overlay0.Foreground()
+	ListPrediction         = $Flavor.Mauve.Foreground()
+	ListPredictionSelected = $Flavor.Surface0.Background()
+
+	# Syntax highlighting
+	Command                = $Flavor.Blue.Foreground()
+	Comment                = $Flavor.Overlay0.Foreground()
+	Default                = $Flavor.Text.Foreground()
+	Error                  = $Flavor.Red.Foreground()
+	Keyword                = $Flavor.Mauve.Foreground()
+	Member                 = $Flavor.Rosewater.Foreground()
+	Number                 = $Flavor.Peach.Foreground()
+	Operator               = $Flavor.Sky.Foreground()
+	Parameter              = $Flavor.Pink.Foreground()
+	String                 = $Flavor.Green.Foreground()
+	Type                   = $Flavor.Yellow.Foreground()
+	Variable               = $Flavor.Lavender.Foreground()
+}
+
+# Set the colours
+Set-PSReadLineOption -Colors $Colors
 
 $env:path += ";$ProfileDir\Scripts"
 
@@ -58,18 +98,3 @@ Set-Alias -name "title" -value Set-WindowTitle
 
 # Starship
 Invoke-Expression (&starship init powershell)
-
-# oh-my-posh
-# oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\cobalt2.omp.json" | Invoke-Expression
-# if (Get-Command zoxide -ErrorAction SilentlyContinue) {
-#     Invoke-Expression (& { (zoxide init powershell | Out-String) })
-# } else {
-#     Write-Host "zoxide command not found. Attempting to install via winget..."
-#     try {
-#         winget install -e --id ajeetdsouza.zoxide
-#         Write-Host "zoxide installed successfully. Initializing..."
-#         Invoke-Expression (& { (zoxide init powershell | Out-String) })
-#     } catch {
-#         Write-Error "Failed to install zoxide. Error: $_"
-#     }
-# }
